@@ -1,4 +1,3 @@
-default[:mysql][:version] = 'mysql57-community'
 default[:mysql][:mysql75_url] = 'http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm'
 default[:mysql][:innodb_buffer_pool_size_ratio] = '0.6'
 default[:mysql][:query_cache_type] = 'ON'
@@ -16,3 +15,5 @@ default[:mysql][:character_set_server] = 'utf8'
 default[:mysql][:collation_server] = 'utf8'
 default[:mysql][:interactive_timeout] = '60'
 default[:mysql][:wait_timeout] = '60'
+
+mysql_user = Chef::EncryptedDataBagItem.load('passwords', 'mysql')
