@@ -54,11 +54,16 @@ end
 #end
 #
 template "/etc/my.cnf" do
-    source "etc/my.cnf.erb"
-    mode 0644
-    owner "root"
-    group "root"
+  source "etc/my.cnf.erb"
+  mode 0644
+  owner "root"
+  group "root"
 end
 
 # use data bag
-data_bag('passwords', 'mysql', IO.read('secret_file');
+template "/etc/chef/encrypted_data_bag_secret" do
+  source "/etc/chef/encrypted_data_bag_secret.erb"
+	mode 0644
+	owner "root"
+	group "root"
+end

@@ -15,5 +15,3 @@ default[:mysql][:character_set_server] = 'utf8'
 default[:mysql][:collation_server] = 'utf8'
 default[:mysql][:interactive_timeout] = '60'
 default[:mysql][:wait_timeout] = '60'
-
-mysql_user = Chef::EncryptedDataBagItem.load('passwords', 'mysql')
