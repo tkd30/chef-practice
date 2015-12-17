@@ -52,7 +52,8 @@ end
 #  action :install
 ##  options "--enablerepo=mysql57-community"
 #end
-#
+
+#make my.cnf
 template "/etc/my.cnf" do
   source "etc/my.cnf.erb"
   mode 0644
@@ -66,4 +67,33 @@ template "/etc/chef/encrypted_data_bag_secret" do
 	mode 0644
 	owner "root"
 	group "root"
+end
+
+#import data bag
+user = Chef::EncryptedDataBagItem.load('passwords', 'mysql')
+
+p user['id']
+
+user_name = user['id']
+password  = user['pass']
+
+p user_name
+
+home      = "/home/#{user_name}"
+
+
+bash "user_name" do
+  code <<-EOH
+		echo #{user_name}
+	EOH
+	not_if { ::File.exists?(user_name) }
+end
+
+
+#make user
+user user_name do
+  password password
+	home home
+	shell "/bin/bash"
+	supports :manage_home => true #manage home directory
 end
