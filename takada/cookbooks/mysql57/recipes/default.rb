@@ -61,39 +61,27 @@ template "/etc/my.cnf" do
   group "root"
 end
 
+service "mysqld" do
+  action [ :start, :enable ]
+end
+
 # use data bag
-template "/etc/chef/encrypted_data_bag_secret" do
-  source "/etc/chef/encrypted_data_bag_secret.erb"
-	mode 0644
-	owner "root"
-	group "root"
-end
+secret_key = Chef::EncryptedDataBagItem.load_secret('/etc/chef/encrypted_data_bag_secret')
 
-#import data bag
-user = Chef::EncryptedDataBagItem.load('passwords', 'mysql')
+#load data bag
+user = Chef::EncryptedDataBagItem.load("users","root")
+#user = Chef::DataBagItem.load("passwords","mysql")
 
-p user['id']
+hoge = user['id']
+fuga = user['pass']
 
-user_name = user['id']
-password  = user['pass']
-
-p user_name
-
-home      = "/home/#{user_name}"
-
-
-bash "user_name" do
-  code <<-EOH
-		echo #{user_name}
+p fuga
+mysql_pass = "NewExample_passwd456$"
+#p mysql_pass
+script "set_root_password" do
+  interpreter 'bash'
+	user 'root'
+	code <<-EOH
+    mysql -u #{hoge} -p#{mysql_pass} -e "ALTER USER '#{hoge}'@'localhost' IDENTIFIED BY '@Dtech00'     "
 	EOH
-	not_if { ::File.exists?(user_name) }
-end
-
-
-#make user
-user user_name do
-  password password
-	home home
-	shell "/bin/bash"
-	supports :manage_home => true #manage home directory
 end
