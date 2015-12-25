@@ -25,7 +25,6 @@ execute "mysql-community.repo" do
   subscribes :run, "package[mysql]", :immediately
 end
 
-
 %w{
 mysql-community-client
 mysql-community-server
@@ -34,6 +33,16 @@ mysql-community-server
     action :install
     options "--enablerepo=mysql57-community"
 	end
+end
+
+#make my.cnf
+template "/etc/my.cnf" do
+  source "etc/my.cnf.erb"
+  mode 0644
+  owner "root"
+  group "root"
+# execute if my/cnf update
+	notifies :run, 'script[set_root_password]', :delayed
 end
 
 # ちょっとこの表記一旦保留
@@ -53,35 +62,26 @@ end
 ##  options "--enablerepo=mysql57-community"
 #end
 
-#make my.cnf
-template "/etc/my.cnf" do
-  source "etc/my.cnf.erb"
-  mode 0644
-  owner "root"
-  group "root"
-end
-
 service "mysqld" do
   action [ :start, :enable ]
 end
 
-# use data bag
-secret_key = Chef::EncryptedDataBagItem.load_secret('/etc/chef/encrypted_data_bag_secret')
+#mysqlサーバー初期設定
+script "first_password" do
+  interpreter "bash"
+  user "root"
+	cwd "/var/log/"
+	code <<-EOH
 
-#load data bag
-user = Chef::EncryptedDataBagItem.load("users","root")
-#user = Chef::DataBagItem.load("passwords","mysql")
+	EOH
+end
 
-hoge = user['id']
-fuga = user['pass']
-
-p fuga
-mysql_pass = "NewExample_passwd456$"
-#p mysql_pass
+#mysql password setting
 script "set_root_password" do
+  action :nothing
   interpreter 'bash'
 	user 'root'
 	code <<-EOH
-    mysql -u #{hoge} -p#{mysql_pass} -e "ALTER USER '#{hoge}'@'localhost' IDENTIFIED BY '@Dtech00'     "
+    mysql -u #{node[:mysql][:root_user]} -p#{node[:mysql][:default_password]} -e "ALTER USER '#{node[:mysql][:root_user]}'@'localhost' IDENTIFIED BY '#{node[:mysql][:root_pass]}'     "
 	EOH
 end
