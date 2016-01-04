@@ -12,14 +12,18 @@ default[:mysql][:expire_logs_days] = '7'
 default[:mysql][:backup] = false
 default[:mysql][:user_info] = nil
 default[:mysql][:character_set_server] = 'utf8'
-default[:mysql][:collation_server] = 'utf8'
+default[:mysql][:collation_server] = 'utf8_general_ci'
 default[:mysql][:interactive_timeout] = '60'
 default[:mysql][:wait_timeout] = '60'
 
 #load data bag
-user = Chef::EncryptedDataBagItem.load("users","root")
+user_root = Chef::EncryptedDataBagItem.load("users","root")
 #user = Chef::DataBagItem.load("passwords","mysql")
-default[:mysql][:root_user] = user['id']
-default[:mysql][:root_password] = user['pass']
+default[:mysql][:root_user] = user_root['id']
+default[:mysql][:root_password] = user_root['pass']
+
+user_normal = Chef::EncryptedDataBagItem.load("users","takada")
+default[:mysql][:normal_user] = user_normal['id']
+default[:mysql][:normal_password] = user_normal['pass']
 
 default[:mysql][:default_password] = '@Dtech00'
