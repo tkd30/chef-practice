@@ -41,35 +41,37 @@ template "/etc/my.cnf" do
   mode 0644
   owner "root"
   group "root"
-# 更新されたらrootパスワード変更を実行 
-#  notifies :run, 'script[set_root_password]', :delayed
 end
 
-#service "mysqld" do
-#  action [ :start, :enable ]
-#end
+service "mysqld" do
+  action [ :start, :enable ]
+  notifies :run, 'script[first_password]', :immediately
+end
 
-#mysqlサーバー初期設定
-#script "first_password" do
-#  interpreter "bash"
-#  user "root"
-#  cwd "/var/log/"
-#  code <<-EOH
-#  EOH
-#end
+#初期パスワードの変更（初回だけ実行）
+script "first_password" do
+  interpreter "bash"
+	flags "-e"
+  user "root"
+  cwd "/var/log/"
+  code <<-EOH
+    PASSWORD=`cat /var/lib/mysql/error.log | grep password $1 | cut -d " " -f 11`
+    mysql -uroot -p${PASSWORD} --connect-expired-password -e "SET PASSWORD FOR root@localhost='#{node[:mysql][:update_password]}';"
+    mysql -uroot -p#{node[:mysql][:update_password]} -e "FLUSH PRIVILEGES;"
+  EOH
+	action :nothing
+end
 
-#rootユーザーの作成
-#user "#{node[:mysql][:normal_user]}" do
-#  home "/home/#{node[:mysql][:normal_user]}"
-#	action :create
-#end
-
-#mysql password setting
-#script "set_root_password" do
-#  action :nothing
-#  interpreter 'bash'
-#  user 'root'
-#  code <<-EOH
-#    mysql -u #{node[:mysql][:root_user]} -p#{node[:mysql][:default_password]} -e "ALTER USER '#{node[:mysql][:root_user]}'@'localhost' IDENTIFIED BY '#{node[:mysql][:root_pass]}'     "
-#  EOH
-#end
+#初期化パスワードを初回実行させるための中間ファイルを配置
+template "/tmp/setting_password.sql" do
+  path "/tmp/setting_password.sql"
+	source "/tmp/setting_password.sql.erb"
+	owner "root"
+	group "root"
+	mode  0600
+	variables({
+					:mysql_root_user => node[:mysql][:root_user],
+					:mysql_root_pass => node[:mysql][:update_password]
+	})
+  notifies :run, 'script[first_password]', :immediately
+end

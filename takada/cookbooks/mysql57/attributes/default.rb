@@ -16,6 +16,10 @@ default[:mysql][:collation_server] = 'utf8_general_ci'
 default[:mysql][:interactive_timeout] = '60'
 default[:mysql][:wait_timeout] = '60'
 
+
+#default root password
+default[:mysql][:default_password] = 'password'
+
 #load data bag
 user_root = Chef::EncryptedDataBagItem.load("users","root")
 #user = Chef::DataBagItem.load("passwords","mysql")
@@ -26,4 +30,4 @@ user_normal = Chef::EncryptedDataBagItem.load("users","takada")
 default[:mysql][:normal_user] = user_normal['id']
 default[:mysql][:normal_password] = user_normal['pass']
 
-default[:mysql][:default_password] = '@Dtech00'
+default[:mysql][:update_password] = '@Dtech00'
