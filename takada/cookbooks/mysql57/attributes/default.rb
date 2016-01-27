@@ -29,5 +29,3 @@ default[:mysql][:root_password] = user_root['pass']
 user_normal = Chef::EncryptedDataBagItem.load("users","takada")
 default[:mysql][:normal_user] = user_normal['id']
 default[:mysql][:normal_password] = user_normal['pass']
-
-default[:mysql][:update_password] = '@Dtech00'

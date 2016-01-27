@@ -56,8 +56,10 @@ script "first_password" do
   cwd "/var/log/"
   code <<-EOH
     PASSWORD=`cat /var/lib/mysql/error.log | grep password $1 | cut -d " " -f 11`
-    mysql -uroot -p${PASSWORD} --connect-expired-password -e "SET PASSWORD FOR root@localhost='#{node[:mysql][:update_password]}';"
-    mysql -uroot -p#{node[:mysql][:update_password]} -e "FLUSH PRIVILEGES;"
+    mysql -uroot -p${PASSWORD} --connect-expired-password -e "SET PASSWORD FOR root@localhost='#{node[:mysql][:root_password]}';"
+    mysql -uroot -p#{node[:mysql][:root_password]} -e "CREATE USER '#{node[:mysql][:normal_user]}'@'localhost' IDENTIFIED BY '#{node[:mysql][:normal_password]}';"
+    mysql -uroot -p#{node[:mysql][:root_password]} -e "GRANT ALL PRIVIlEGES ON *.* TO '#{node[:mysql][:normal_user]}'@'localhost' WITH GRANT OPTION;"
+    mysql -uroot -p#{node[:mysql][:root_password]} -e "FLUSH PRIVILEGES;"
   EOH
 	action :nothing
 end
