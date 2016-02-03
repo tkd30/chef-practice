@@ -42,4 +42,5 @@ package "mysql-community-server" do
   version "#{node[:mysql][:version]}"
 	action :install
   options "--enablerepo=mysql56-community"
+  not_if "rpm -qa | grep mysql-community-server"
 end
